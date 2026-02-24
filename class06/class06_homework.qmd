@@ -1,0 +1,154 @@
+---
+title: "Class 6: R Functions Homework"
+author: "Alyssa Duran (PID: A18550696)"
+format: pdf
+---
+
+## R Functions
+
+> First, install packages by using `install.packages("bio3d)` and `library()`
+
+```{r}
+library(bio3d)
+```
+
+> Section 1A
+
+```{r}
+# (A. Can you improve this analysis code?
+df <- data.frame(a=1:10, b=seq(200,400,length=10),c=11:20,d=NA)
+df$a <- (df$a - min(df$a)) / (max(df$a) - min(df$a))
+df$b <- (df$b - min(df$a)) / (max(df$b) - min(df$b))
+df$c <- (df$c - min(df$c)) / (max(df$c) - min(df$c))
+df$d <- (df$d - min(df$d)) / (max(df$a) - min(df$d)) 
+```
+
+> Section 1B
+
+```{r}
+# Can you improve this analysis code?
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+```
+
+
+```{r}
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
+
+## Q6. How would you generalize the original code above to work with any set of input protein structures?
+
+> Inputs to the Function
+
+- `pdb_ids`: Character vector of PDB IDs (e.g., `c("4AKE", "1AKE", "1E4Y")`)
+- `chain`: Protein chain to analyze (default = `"A"`)
+- `elety`: Atom type to extract (default = `"CA"` for alpha carbons)
+- `plot_individual`: Whether to plot individual B-factor plots (default = `TRUE`)
+- `plot_cluster`: Whether to plot hierarchical clustering dendrogram (default = `TRUE`)
+
+```{r}
+# Example call:
+analyze_bfactor("4AKE")
+analyze_bfactor("1AKE")
+analyze_bfactor("1E4Y")
+```
+
+> What the Function Does and How to Use It
+
+This function reads multiple protein PDB files, extracts B-factor values, stores them for all proteins, and plots B-factors for the specified protein. The function generalizes the original code to work with any set of proteins.
+
+To use the function, first install packages by `install.packages("bio3d")` and `library()` Then, use the function with PDB IDs by `analyze_bfactor()`. Changing chain, atom type, and protein plots can be done as well.
+
+```{r}
+# Example: 
+analyze_bfactor(c("4AKE", "1AKE", "1E4Y"), chain = "A")
+```
+
+> Output of the Function
+
+The function returns a name list where each value is a vector of B-factor values where the name is the PDB IDs. The function displays a B-factor plot for the specified protein
+
+- Each element name is a PDB ID
+- Each element value is a numeric vector of B-factor values
+- Individual B-factor plots are displayed (if `plot_individual = TRUE`)
+- A hierarchical clustering dendrogram is displayed for multiple structures (if `plot_cluster = TRUE`)
+
+```{r}
+analyze_bfactor <- function(pdb_ids, chain = "A", elety = "CA", plot_individual = TRUE, plot_cluster = TRUE) {
+  
+  # Load bio3d package
+  library(bio3d)
+  
+  # Initialize list to store B-factor values
+  bfactor_list <- list()
+  
+  # Loop through each PDB ID and read PDB file
+  for (pdb_id in pdb_ids) {
+    cat("Processing:", pdb_id, "\n")
+   
+    pdb <- read.pdb(as.character(pdb_id)) 
+    
+    # Trim to specified chain and atom type
+    pdb_trim <- trim.pdb(pdb, chain = chain, elety = elety)
+    
+    # Extract B-factor values
+    bfac <- pdb_trim$atom$b
+    
+    # Store in list with PDB ID as name
+    bfactor_list[[pdb_id]] <- bfac
+    
+    # Plot individual B-factor plot if requested
+    if (plot_individual) {
+      plotb3(
+        bfac,
+        sse = pdb_trim,
+        typ = "l",
+        ylab = "B-factor",
+        main = paste("B-factor plot for", pdb_id)
+      )
+    }
+  }
+  
+  # Perform hierarchical clustering if multiple structures and clustering is requested
+  if (length(pdb_ids) > 1 && plot_cluster) {
+    # Combine B-factors into matrix
+    bfactor_matrix <- do.call(rbind, bfactor_list)
+    
+    # Perform hierarchical clustering
+    hc <- hclust(dist(bfactor_matrix))
+    
+    # Plot dendrogram
+    plot(hc, main = "Hierarchical Clustering of B-factors", 
+         xlab = "Protein Structures", ylab = "Distance")
+  }
+  
+  # Return named list of B-factors
+  return(bfactor_list)
+}
+results_single <- analyze_bfactor("4AKE")
+
+results_multiple <- analyze_bfactor(c("4AKE", "1AKE", "1E4Y"), chain = "A")
+
+results_cluster_only <- analyze_bfactor(
+  c("4AKE", "1AKE", "1E4Y"), 
+  plot_individual = FALSE, 
+  plot_cluster = TRUE
+)
+
+results <- analyze_bfactor(c("4AKE", "1AKE", "1E4Y"))
+results$`4AKE`
+```
+
+
+
