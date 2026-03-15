@@ -5,7 +5,7 @@ My repository for my classwork for [BIMM143](https://bioboot.github.io/bimm143_W
 
 *Introductory Material: Working with R*
 
-Class 5 - [Basic Data Exploration and Visualization in R HTML, MD, Rmd](class05/class05.qmd)
+Class 5 - [Basic Data Exploration and Visualization in R HTML, MD, Rmd](class05/class05.md)
 
 Class 6 - [Creating R Functions](class06/class06.html)
 
