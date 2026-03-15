@@ -1,0 +1,221 @@
+---
+title: "Class 14: Mini Project - Pathway Analysis from RNA-Seq Results"
+author: "Alyssa Duran (PID: A18550696)"
+format: pdf
+---
+
+## Overview
+
+Pathway analysis (also known as gene set analysis or over-representation analysis), aims to reduce the complexity of interpreting gene lists via mapping the listed genes to known (i.e. annotated) biological pathways, processes and functions.
+
+
+## 1. Differential Expression Analysis
+
+Install DESeq2 by using `install.packages(DESeq2)` then `library(DESeq2)`. Read in the csv file:
+
+```{r, message=FALSE}
+# Loading in DESeq2
+library(DESeq2)
+
+# Importing metadata
+metaFile <- "GSE37704_metadata.csv"
+colData = read.csv(metaFile, row.names=1)
+head(colData)
+
+# Importing countdata
+countFile <- "GSE37704_featurecounts.csv"
+countData = read.csv(countFile, row.names=1)
+head(countData)
+
+# We need to remove the odd first $length col to have a 1:1 correspondence
+countData <- as.matrix(countData[,-1])
+head(countData)
+# Filter count data where you have 0 read count across all samples
+to.keep <- rowSums(countData) > 0
+countData <- countData[to.keep, ]
+head(countData)
+```
+
+Run DESeq2 by setting up the DESeqDataSet object required for the `DESeq()` function and then run the DESeq pipeline.
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=countData,
+                             colData=colData,
+                             design=~condition)
+dds <- DESeq(dds)
+dds
+
+res <- results(dds)
+head(res)
+summary(res)
+```
+
+Make a volcano plot, a commonly produced visualization from this type of data that was introduced last day.
+
+```{r}
+library(ggplot2)
+library(EnhancedVolcano)
+
+ggplot(res) +
+  aes(log2FoldChange,
+      -log(padj)) +
+  geom_point()
+```
+
+> Improve the plot by adding elements such as axis labels, color, and cutoff lines:
+
+```{r}
+mycols <- rep("gray", nrow(res)) # Making a color vector for all genes
+mycols[abs(res$log2FoldChange) > 2 ] <- "blue" # Color blue the genes with fold change above 2
+mycols[ res$padj > 0.01 ] <- "gray" # Color gray those with adjusted p-value more than 0.01
+
+ggplot(res) +
+  aes(log2FoldChange,
+      -log(padj)) +
+  geom_point(col=mycols) +
+  xlab("Log2(FoldChange)") +
+  ylab("-Log(P-value)") +
+  geom_vline(xintercept = c(-2,2)) +
+  geom_hline(yintercept = -log(0.01))
+```
+
+Add gene annotation by using the `mapIDs()` function multiple times to add SYMBOL, ENTREZID and GENENAME annotation to our results by completing the code below.
+
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+
+columns(org.Hs.eg.db)
+
+res$symbol = mapIds(org.Hs.eg.db,
+                    keys=row.names(res), 
+                    keytype="ENSEMBL",
+                    column="SYMBOL",
+                    multiVals="first")
+
+res$entrez = mapIds(org.Hs.eg.db,
+                    keys=row.names(res),
+                    keytype="ENSEMBL",
+                    column="ENTREZID",
+                    multiVals="first")
+res$name =   mapIds(org.Hs.eg.db,
+                    keys=row.names(res),
+                    keytype="ENSEMBL",
+                    column="GENENAME",
+                    multiVals="first")
+head(res, 10)
+```
+
+> Finally for this section let's reorder these results by adjusted p-value and save them to a CSV file in your current project directory.
+
+```{r}
+res <- res[order(res$pvalue),]
+write.csv(res, file="deseq_results.csv")
+```
+
+
+## 2. Pathway Analysis
+
+Here we are going to use the **gage** package for pathway analysis. Once we have a list of enriched pathways, we're going to use the **pathview** package to draw pathway diagrams, shading the molecules in the pathway by their degree of up/down-regulation.
+
+First we need to do our one time install of these required bioconductor packages by running `BiocManager::install( c("pathview", "gage", "gageData") )` in your R console. Then, load the packages and setup the KEGG data-sets we need.
+
+```{r, message=FALSE}
+library(pathview)
+library(gage)
+library(gageData)
+
+data(kegg.sets.hs)
+data(sigmet.idx.hs)
+
+kegg.sets.hs <- kegg.sets.hs[sigmet.idx.hs] # Focusing on signaling and metabolic pathways only
+head(kegg.sets.hs, 3) # Examining the first 3 pathways
+```
+
+The main `gage()` function requires a named vector of fold changes, where the names of the values are the Entrez gene IDs. Note that we used the `mapIDs()` function above to obtain Entrez gene IDs (stored in `res$entrez`) and we have the fold change results from DESeq2 analysis (stored in `res$log2FoldChange`). Then, Now, run the **gage** pathway analysis.
+
+```{r}
+foldchanges <- res$log2FoldChange
+names(foldchanges) <- res$entrez
+head(foldchanges)
+
+# Get the results
+keggres <- gage(foldchanges, gsets=kegg.sets.hs)
+attributes(keggres)
+head(keggres$less) # Looking at the first few down (less) pathways
+```
+
+Now, let's try out the `pathview()` function from the `pathview package` to make a pathway plot with our RNA-Seq expression results shown in color. To begin with lets manually supply a `pathway.id` (namely the first part of the "hsa04110 Cell cycle") that we could see from the print out above.
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id="hsa04110")
+
+# A different PDF based output of the same data
+pathview(gene.data=foldchanges, pathway.id="hsa04110", kegg.native=FALSE)
+```
+
+![](hsa04110.pathview.png)
+
+Now, let's process our results a bit more to automagicaly pull out the top 5 upregulated pathways, then further process that just to get the pathway IDs needed by the `pathview()` function. We'll use these KEGG pathway IDs for pathview plotting below.
+
+```{r}
+## Focus on top 5 upregulated pathways here for demo purposes only
+keggrespathways <- rownames(keggres$greater)[1:5]
+
+# Extract the 8 character long IDs part of each string
+keggresids = substr(keggrespathways, start=1, stop=8)
+keggresids
+```
+
+Finally, lets pass these IDs in `keggresids` to the `pathview()` function to draw plots for all the top 5 :
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id=keggresids, species="hsa")
+```
+
+> Can you do the same procedure as above to plot the pathview figures for the top 5 down-regulated pathways?
+
+![](hsa04640.pathview.png)
+![](hsa04630.pathview.png)
+![](hsa00140.pathview.png)
+![](hsa04142.pathview.png)
+![](hsa04330.pathview.png)
+
+
+## 3. Gene Ontology (GO)
+
+Focus on the Biological Process (BP) of gene ontology.
+
+```{r}
+data(go.sets.hs)
+data(go.subs.hs)
+
+# Focus on Biological Process subset of GO
+gobpsets = go.sets.hs[go.subs.hs$BP]
+
+gobpres = gage(foldchanges, gsets=gobpsets)
+
+lapply(gobpres, head)
+```
+
+
+## 4. Reactome Analysis
+
+Reactome is database consisting of biological molecules and their relation to pathways and processes. Reactome, such as many other tools, has an online software available (https://reactome.org/) and R package available (https://bioconductor.org/packages/release/bioc/html/ReactomePA.html).
+
+Let's now conduct over-representation enrichment analysis and pathway-topology analysis with Reactome using the previous list of significant genes generated from our differential expression results above. First, using R, output the list of significant genes at the 0.05 level as a plain text file:
+
+```{r}
+sig_genes <- res[res$padj <= 0.05 & !is.na(res$padj), "symbol"]
+print(paste("Total number of significant genes:", length(sig_genes)))
+
+write.table(sig_genes, file="significant_genes.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
+```
+
+> What pathway has the most significant “Entities p-value”? Do the most significant pathways listed match your previous KEGG results? What factors could cause differences between the two methods?
+
+Mitotic cell cycle has the most significant "Entities p-value." The most significant pathways listed do match the previous Kegg results. Factors such as differences in database structure and curation (Reactome vs KEGG), the statistical methods used for enrichment analysis (over-representation analysis vs GAGE), the underlying gene sets included in each pathway database, and the criteria for defining significant genes (adjusted p-value ≤ 0.05) could cause differences between the two methods.
+
+
+
+
