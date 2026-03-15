@@ -24,6 +24,6 @@ Class 12 - [Drug Discovery: Techniques and Analysis](class12/lab12.md)
 
 Class 13 - [Genome Informatics and High Throughput Sequencing (NGS, RNA-Seq, and FastQC)](class13/lab13.md)
 
-Class 14 - [Transcriptomics and RNA-Seq Analysis](class14/lab14.md)
+Class 14 - [Transcriptomics and RNA-Seq Analysis](class14/lab_14.md)
 
 Class 18 - [Pertussis and the CMI-PB project](class18/lab18.md)
