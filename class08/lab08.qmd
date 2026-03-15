@@ -1,7 +1,7 @@
 ---
 title: "Class 8 Mini-Project"
 author: "Alyssa Duran (PID: A18550696)"
-format: pdf
+format: gfm
 ---
 ## Background
 

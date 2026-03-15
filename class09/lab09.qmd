@@ -1,7 +1,7 @@
 ---
 title: "Class 09: Candy Mini-Project"
 author: "Alyssa Duran (PID: A18550696)"
-format: pdf
+format: gfm
 ---
 
 ## In this mini-project, you will explore FiveThirtyEight's Halloween Candy dataset.

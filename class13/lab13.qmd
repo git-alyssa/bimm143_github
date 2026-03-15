@@ -1,7 +1,7 @@
 ---
 title: "Class 13: Transcriptomics and the Analysis of RNA-Seq Data"
 author: "Alyssa Duran (PID: A18550696)"
-format: pdf
+format: gfm
 ---
 
 ## Section 1. Background
