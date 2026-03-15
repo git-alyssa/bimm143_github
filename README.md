@@ -14,3 +14,13 @@ Class 7 - [R Packages, working with CRAN, and working with Bioconductor](class07
 *Using R and Other Tools for Bioinformatics Analysis*
 
 Class 8 - [An Introduction to Machine Learning (Hierarchical Clustering)](class08/lab08.qmd)
+
+Class 9 - [Ananlyzing High Dimensional Datasets and Unsupervised Learning]()
+
+Class 11 - [Structural Bioinformatics: Analyzing Protein Structure and Function]()
+
+Class 12 - [Drug Discovery: Techniques and Analysis]()
+
+Class 13 - [Genome Informatics and High Throughput Sequencing (NGS, RNA-Seq, and FastQC)]()
+
+Class 14 - [Transcriptomics and RNA-Seq Analysis]()
