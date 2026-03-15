@@ -85,7 +85,7 @@ The `sample()` function can be a useful starting point here:
 sample(1:10, size = 4)
 ```
 
-    [1] 1 8 4 6
+    [1] 6 1 8 7
 
 > Q. Generate 9 random numbers taken from the input vector x=1:10?
 
@@ -93,7 +93,7 @@ sample(1:10, size = 4)
 sample(1:10, size = 9)
 ```
 
-    [1]  2  1  7 10  9  5  4  3  8
+    [1]  8  5  3  9 10  4  6  2  7
 
 > Q. Generate 12 random numbers taken from the input vector x=1:10?
 
@@ -101,7 +101,7 @@ sample(1:10, size = 9)
 sample(1:10, size = 12, replace = TRUE, prob = NULL)
 ```
 
-     [1]  2  1  7  2  9  7  8  1 10  6  7  1
+     [1] 4 5 3 2 8 6 7 6 9 6 9 4
 
 > Q. Write code for the sample() function that generates nucleotide
 > sequences of length 6.
@@ -110,7 +110,7 @@ sample(1:10, size = 12, replace = TRUE, prob = NULL)
 sample(c("A","T","C","G"), size = 6, replace = TRUE, prob = NULL)
 ```
 
-    [1] "A" "G" "A" "G" "C" "A"
+    [1] "C" "G" "T" "C" "G" "G"
 
 > Q. Write a first function generate_dna() that returns a user specified
 > length DNA sequence.
@@ -122,7 +122,7 @@ generate_dna <- function(len) {
 generate_dna(len = 6)
 ```
 
-    [1] "G" "A" "C" "G" "A" "G"
+    [1] "T" "A" "C" "A" "T" "T"
 
 > **Key-Points** Every function in R lookds fundamentally the same in
 > terms of its structure. Basically 3 things: name, input, and body
@@ -155,7 +155,7 @@ generate_dna(fasta = TRUE)
 
     Single-element vector output
 
-    [1] "CCCGGG"
+    [1] "GGGGCT"
 
 The `paste()` function - it’s job is to join up or stick together
 (a.k.a. paste) input strings together.
@@ -202,7 +202,7 @@ return(ans)
 generate_protein(6)
 ```
 
-    [1] "HKPEMP"
+    [1] "RTLFDK"
 
 > Q. Use that function to genreate random protein sequences between
 > length 6 and 12.
@@ -212,43 +212,43 @@ generate_protein(6)
 generate_protein(6)
 ```
 
-    [1] "SDGCWH"
+    [1] "WECWPH"
 
 ``` r
 generate_protein(7)
 ```
 
-    [1] "HLWSDEW"
+    [1] "LCMMTYR"
 
 ``` r
 generate_protein(8)
 ```
 
-    [1] "AILRYNRF"
+    [1] "VERPSYIT"
 
 ``` r
 generate_protein(9)
 ```
 
-    [1] "YNGNWRQHW"
+    [1] "TPWIIELTY"
 
 ``` r
 generate_protein(10)
 ```
 
-    [1] "CDMSETPKWA"
+    [1] "WPTCKIAFDQ"
 
 ``` r
 generate_protein(11)
 ```
 
-    [1] "YQVNALVVYSV"
+    [1] "PTVLVTHPIQR"
 
 ``` r
 generate_protein(12)
 ```
 
-    [1] "RCSKSQDDRAIS"
+    [1] "WHHEQNLCQTIV"
 
 ``` r
 # Using loops
@@ -263,19 +263,19 @@ for (i in 6:12) {
 ```
 
     >6
-    GHHGTN 
+    RGHDEF 
     >7
-    YKVHDHN 
+    HMRDTCG 
     >8
-    DCHKFHKS 
+    RAKLCCYA 
     >9
-    MPWSVALYT 
+    GITLNQPLG 
     >10
-    MCVCAGKMCA 
+    DLAQKHMRTP 
     >11
-    SFMSFQYQHPI 
+    YKEAHIGYRRH 
     >12
-    STMDCATPRVHK 
+    TYGPWFYHAVLC 
 
 > Q. Are any of your sequences unique i.e. not found anywhere else in
 > nature?
