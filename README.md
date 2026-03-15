@@ -1,4 +1,4 @@
-# Bioinformatics Class (bimm143_github)
+# Bioinformatics Class, BIMM 143
 My repository for my classwork for [BIMM143](https://bioboot.github.io/bimm143_W26/) at UC San Diego in Winter 2026.
 
 ## Index of Material
